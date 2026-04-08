@@ -1,0 +1,9 @@
+{
+  "exchange": "paper_trading",
+  "robinhood_user": "YOUR_ROBINHOOD_EMAIL",
+  "robinhood_pass": "YOUR_ROBINHOOD_PASSWORD",
+  "symbols": ["VERU", "AAPL", "TSLA"],
+  "user_agent": "Your Name your@email.com",
+  "keywords_bullish": ["fda approval", "fast track", "breakthrough", "phase 3 met", "positive data"],
+  "keywords_bearish": ["offering", "s-3", "dilution", "clinical hold", "failed to meet"]
+}
