@@ -33,10 +33,16 @@ Copy the example configuration file:
 ```bash
 cp config.example.json config.json
 ```
-Edit `config.json`:
-- **`user_agent`**: You *must* set this to your actual Name/Email (e.g., `John Doe john@example.com`). The SEC blocks anonymous requests.
-- **`symbols`**: Add the ticker symbols you want to monitor.
+Edit `config.json` with your details:
 - **`exchange`**: Set to `"paper_trading"` for testing, or `"robinhood"` for live execution.
+- **`robinhood_user` & `robinhood_pass`**: Your Robinhood login credentials (required if `exchange` is "robinhood").
+- **`symbols`**: Array of ticker symbols to monitor (e.g., `["VERU", "AAPL"]`).
+- **`user_agent`**: You *must* set this to your actual Name and Email (e.g., `John Doe john@example.com`). The SEC blocks anonymous requests.
+- **`polling_interval_seconds`**: How often to check the SEC feed. The SEC allows up to 10 requests per second across all your IPs.
+- **`trailing_stop_percentage`**: (Optional) Drops a trailing stop-loss order right after a buy is executed. Set to `0` to disable.
+- **`telegram_bot_token` & `telegram_chat_id`**: (Optional) Get instant push notifications on your phone for signals and trades.
+- **`llm_api_key`**: (Optional) Your Google Gemini API Key. If provided, the bot uses the LLM to read the filing and determine sentiment, drastically reducing false positives. If left blank, it falls back to basic keyword matching.
+- **`keywords_bullish` & `keywords_bearish`**: Used only if the LLM key is missing or fails.
 
 ---
 
