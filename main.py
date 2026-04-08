@@ -29,14 +29,17 @@ def main():
     logging.info(f"Baseline established. Monitoring {len(monitor.seen_ids)} existing filings.")
 
     def on_new_filing(symbol, entry):
-        action = strategy.analyze_filing(symbol, entry)
+        action, reason = strategy.analyze_filing(symbol, entry)
         if action in ["BUY", "SELL"]:
-            executor.execute(symbol, action, quantity=100)
+            executor.execute(symbol, action, reason, quantity=100)
+
+    poll_interval = config.get('polling_interval_seconds', 10)
+    logging.info(f"Polling SEC every {poll_interval} seconds...")
 
     try:
         while True:
             monitor.scan_for_new_filings(on_new_filing)
-            time.sleep(15 * 60) # Scan every 15 minutes to respect SEC rate limits (max 10 requests per second across all bots)
+            time.sleep(poll_interval)
     except KeyboardInterrupt:
         logging.info("Bot stopped by user.")
 

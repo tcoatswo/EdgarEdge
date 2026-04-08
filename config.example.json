@@ -4,6 +4,15 @@
   "robinhood_pass": "YOUR_ROBINHOOD_PASSWORD",
   "symbols": ["VERU", "AAPL", "TSLA"],
   "user_agent": "Your Name your@email.com",
+  
+  "polling_interval_seconds": 10,
+  "trailing_stop_percentage": 5.0,
+
+  "telegram_bot_token": "YOUR_TELEGRAM_BOT_TOKEN",
+  "telegram_chat_id": "YOUR_TELEGRAM_CHAT_ID",
+
+  "llm_api_key": "YOUR_GEMINI_API_KEY",
+  
   "keywords_bullish": ["fda approval", "fast track", "breakthrough", "phase 3 met", "positive data"],
   "keywords_bearish": ["offering", "s-3", "dilution", "clinical hold", "failed to meet"]
 }

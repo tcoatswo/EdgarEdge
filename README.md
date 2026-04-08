@@ -5,9 +5,12 @@ An event-driven algorithmic trading bot that monitors the US SEC EDGAR database 
 Built to support both **Paper Trading** (testing) and **Robinhood Live Trading**.
 
 ## Features
-- **Direct SEC Polling:** Uses the SEC's raw Atom feeds to get filings immediately (bypassing delayed third-party news aggregators).
-- **Keyword Sentiment Engine:** Parses the text of filings to determine if an event is bullish or bearish based on configurable keywords.
+- **Direct SEC Polling:** Uses the SEC's raw Atom feeds to get filings immediately (bypassing delayed third-party news aggregators). Adjustable polling rate down to 10 seconds.
+- **AI Sentiment Engine (Gemini / OpenAI):** Pipes filing summaries directly into an LLM to accurately determine if an event is bullish or bearish, eliminating false positives like "FDA Lifts Clinical Hold". (Falls back to keyword matching if no API key is provided).
 - **Robinhood Integration:** Executes live trades via `robin_stocks` when a signal triggers.
+- **Extended-Hours Support:** Automatically switches to Extended-Hours Limit orders if a filing drops before/after the market opens.
+- **Auto-Trailing Stop Loss:** Optionally submits a trailing stop loss order immediately after buying to lock in profits.
+- **Telegram Webhooks:** Pushes real-time alerts to your phone when a trade executes.
 - **Paper Trading Mode:** Logs signals to the console without risking capital.
 
 ---
