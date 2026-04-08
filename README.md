@@ -1,6 +1,6 @@
-# SEC EDGAR Automated Trader
+# EdgarEdge: Algorithmic Event-Driven Trader
 
-An event-driven algorithmic trading bot that monitors the US SEC EDGAR database for real-time company filings (8-K, S-3, 10-Q, etc.) and executes trades based on basic keyword sentiment analysis. Get ahead of the market by acting on material news (FDA approvals, secondary offerings) seconds after it hits the wire.
+An event-driven algorithmic trading bot that monitors the US SEC EDGAR database for real-time company filings (8-K, S-3, 10-Q, etc.) and executes trades based on LLM sentiment analysis. Get ahead of the market by acting on material news (FDA approvals, secondary offerings) seconds after it hits the wire.
 
 Built to support both **Paper Trading** (testing) and **Robinhood Live Trading**.
 
@@ -19,8 +19,8 @@ Built to support both **Paper Trading** (testing) and **Robinhood Live Trading**
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/tcoatswo/sec-edgar-trader.git
-cd sec-edgar-trader
+git clone https://github.com/tcoatswo/EdgarEdge.git
+cd EdgarEdge
 ```
 
 2. **Install dependencies:**
