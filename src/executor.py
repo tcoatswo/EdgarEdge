@@ -51,6 +51,12 @@ class OrderExecutor:
 
     def get_latest_price(self, symbol):
         try:
+            quotes = r.stocks.get_quotes(symbol)
+            if quotes and quotes[0]:
+                q = quotes[0]
+                price = q.get("last_extended_hours_trade_price") or q.get("last_trade_price") or q.get("ask_price")
+                if price:
+                    return float(price)
             quote = r.stocks.get_latest_price(symbol)
             return float(quote[0])
         except Exception:
