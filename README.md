@@ -6,10 +6,10 @@ Built to support both **Paper Trading** (testing) and **Robinhood Live Trading**
 
 ## Features
 - **Direct SEC Polling:** Uses the SEC's raw Atom feeds to get filings immediately (bypassing delayed third-party news aggregators). Adjustable polling rate down to 10 seconds.
-- **AI Sentiment Engine (Gemini / OpenAI):** Pipes filing summaries directly into an LLM to accurately determine if an event is bullish or bearish, eliminating false positives like "FDA Lifts Clinical Hold". (Falls back to keyword matching if no API key is provided).
-- **Robinhood Integration:** Executes live trades via `robin_stocks` when a signal triggers.
-- **Extended-Hours Support:** Automatically switches to Extended-Hours Limit orders if a filing drops before/after the market opens.
-- **Auto-Trailing Stop Loss:** Optionally submits a trailing stop loss order immediately after buying to lock in profits.
+- **AI Sentiment Engine (Gemini):** Sends filing summaries to Gemini for a BULLISH, BEARISH, or NEUTRAL classification. Keyword matching is used only when no API key is configured.
+- **Robinhood Integration:** Requires an exact terminal approval for each live signal before placing an order via `robin_stocks`.
+- **Extended-Hours Support:** Uses limit buys during regular and extended hours so the configured dollar cap bounds the order price.
+- **Auto-Trailing Stop Loss:** Submits a trailing stop only for shares confirmed filled by the broker. A rejected or uncertain stop halts further live trading and alerts the operator.
 - **Telegram Webhooks:** Pushes real-time alerts to your phone when a trade executes.
 - **Paper Trading Mode:** Logs signals to the console without risking capital.
 
@@ -40,9 +40,12 @@ Edit `config.json` with your details:
 - **`user_agent`**: You *must* set this to your actual Name and Email (e.g., `John Doe john@example.com`). The SEC blocks anonymous requests.
 - **`polling_interval_seconds`**: How often to check the SEC feed. The SEC allows up to 10 requests per second across all your IPs.
 - **`trailing_stop_percentage`**: (Optional) Drops a trailing stop-loss order right after a buy is executed. Set to `0` to disable.
+- **`order_quantity`, `max_order_shares`, `max_order_notional`, `max_position_shares`**: Per-order share and dollar limits, plus a cap on the resulting position. The example's $1,000 notional cap will block a 100-share order in a stock above $10 until deliberately adjusted.
+- **`order_fill_timeout_seconds`**: How long to wait for a fill before requesting cancellation of an unfilled order.
+- **`max_filing_age_seconds`**: Ignore delayed filings after an SEC outage; entries without a parseable timestamp are ignored.
 - **`telegram_bot_token` & `telegram_chat_id`**: (Optional) Get instant push notifications on your phone for signals and trades.
 - **`llm_api_key`**: (Optional) Your Google Gemini API Key. If provided, the bot uses the LLM to read the filing and determine sentiment, drastically reducing false positives. If left blank, it falls back to basic keyword matching.
-- **`keywords_bullish` & `keywords_bearish`**: Used only if the LLM key is missing or fails.
+- **`keywords_bullish` & `keywords_bearish`**: Used only when no LLM key is configured.
 
 ---
 
@@ -56,14 +59,16 @@ If you set `"exchange": "robinhood"`, you need to authenticate:
    python main.py
    ```
 3. Robinhood will send an SMS code to your phone. The script will pause and ask you to enter the code in the terminal.
-4. Once entered, your authentication token is cached securely on your machine (`~/.tokens`). You can now run the bot in the background without needing SMS codes again.
+4. Once entered, `robin_stocks` may cache an authentication token on your machine. Keep that token and your `config.json` private.
+
+Live orders require an interactive terminal. Review the filing and type the exact `APPROVE ...` phrase shown for each signal. A background run skips live orders and sends a review alert instead. The bot exits without trading if it cannot fetch every configured SEC feed at startup. Processed filing IDs are saved in `data/edgar_edge_seen_ids.json` (or `$EDGAREDGE_DATA_DIR/edgar_edge_seen_ids.json`) to prevent replay after restart.
 
 ---
 
 ## How It Works under the Hood
 - **`src/sec_monitor.py`**: Polls the SEC EDGAR Atom RSS feed for the configured ticker symbols. Respects the SEC rate limit (max 10 requests/sec).
 - **`src/strategy.py`**: A simple NLP engine that looks for bearish (e.g., "S-3", "Offering", "Dilution") or bullish (e.g., "FDA Approval", "Fast Track") terms in the filing titles and summaries.
-- **`src/executor.py`**: Catches the BUY/SELL signal and pushes the market order to the configured exchange.
+- **`src/executor.py`**: Checks configured risk limits, places an approved order, confirms fills, and places a protective stop for filled buys.
 
 ## Disclaimer
 This project is strictly for **educational purposes**. Automated trading based on SEC filings is highly risky. Market conditions change rapidly, and keyword-based parsing is not foolproof. Never trade with money you cannot afford to lose. The developers assume no responsibility for financial losses.

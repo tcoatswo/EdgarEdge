@@ -6,6 +6,12 @@
   "user_agent": "Your Name your@email.com",
   
   "polling_interval_seconds": 10,
+  "max_filing_age_seconds": 600,
+  "order_quantity": 100,
+  "max_order_shares": 100,
+  "max_order_notional": 1000,
+  "max_position_shares": 100,
+  "order_fill_timeout_seconds": 30,
   "trailing_stop_percentage": 5.0,
 
   "telegram_bot_token": "YOUR_TELEGRAM_BOT_TOKEN",

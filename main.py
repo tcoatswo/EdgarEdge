@@ -1,6 +1,8 @@
 import logging
 import time
 import json
+import sys
+import hashlib
 from src.sec_monitor import SECMonitor
 from src.strategy import StrategyEngine
 from src.executor import OrderExecutor
@@ -16,22 +18,37 @@ def main():
     logging.info("Starting SEC EDGAR Automated Trader...")
     
     monitor = SECMonitor(config)
+    try:
+        monitor.establish_baseline()
+    except (OSError, RuntimeError) as exc:
+        logging.error("Trading disabled: %s", exc)
+        raise SystemExit(1) from exc
+    logging.info("Baseline established. Monitoring %s existing filings.", len(monitor.seen_ids))
+
     strategy = StrategyEngine(config)
     executor = OrderExecutor(config)
-
-    # Initialize seen_ids so we don't trade on old filings on boot
-    logging.info("Fetching initial baseline of filings...")
-    for symbol in config.get('symbols', []):
-        feed = monitor.fetch_filings(symbol)
-        if feed and feed.entries:
-            for entry in feed.entries:
-                monitor.seen_ids.add(entry.id)
-    logging.info(f"Baseline established. Monitoring {len(monitor.seen_ids)} existing filings.")
 
     def on_new_filing(symbol, entry):
         action, reason = strategy.analyze_filing(symbol, entry)
         if action in ["BUY", "SELL"]:
-            executor.execute(symbol, action, reason, quantity=100)
+            quantity = config.get('order_quantity', 100)
+            if config.get('exchange') == 'robinhood':
+                filing_code = hashlib.sha256(str(entry.id).encode()).hexdigest()[:12]
+                approval = f"APPROVE {action} {symbol} {filing_code}"
+                executor.send_telegram(f"Live signal requires manual approval: {action} {quantity} {symbol}; filing {entry.id}")
+                if not sys.stdin.isatty():
+                    logging.warning("Live signal skipped: no interactive terminal for approval")
+                    return
+                logging.warning("Review filing title %r and SEC link %r", entry.title, getattr(entry, 'link', ''))
+                try:
+                    entered = input(f"Type '{approval}' to place {action} order: ")
+                except EOFError:
+                    return
+                if entered != approval:
+                    logging.info("Live order declined")
+                    return
+            executor.execute(symbol, action, reason, quantity=quantity,
+                             approved=config.get('exchange') == 'robinhood')
 
     poll_interval = config.get('polling_interval_seconds', 10)
     logging.info(f"Polling SEC every {poll_interval} seconds...")
